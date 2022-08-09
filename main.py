@@ -1,4 +1,4 @@
-## TODO
+## TODO -- use main to run the program (not just for testing )
 
 from src.process_hn_posts import Process_HN_Posts
 

@@ -1,6 +1,5 @@
 
 import requests
-import json
 from urllib.parse import urlparse
 import regex as reg
 
