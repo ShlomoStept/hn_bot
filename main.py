@@ -10,8 +10,10 @@ process_hn_posts = Process_HN_Posts()
 # b - get the top 500 post ids
 process_hn_posts.get_top_posts()
 
+# TODO --> need to check here if the response was to hn-API failed  --> currently its built into the test_n_posts() function
+
 # c - test the first 50 posts to see if any of their urls require a subscription
-process_hn_posts.test_n_posts(0,100)
+process_hn_posts.test_n_posts(490,600)
 
 # d - print out how many do, and how many dont and a list of the id/details
 
@@ -20,7 +22,7 @@ print(f"We have {len(process_hn_posts.completed_post_set)} posts of the {100}, t
 print(process_hn_posts.completed_post_set)
 print()
 print(f"We have {len(process_hn_posts.hn_url_sub_post_list)} posts of the {100}, that ::DO Indeed:: contain urls to websites that require a subsription, and here they are ")
-[ print(post[1]) for post in process_hn_posts.hn_url_sub_post_list]
+[ print(post[2]) for post in process_hn_posts.hn_url_sub_post_list]
 print("-"*30)
 
 
