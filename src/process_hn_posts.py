@@ -4,9 +4,22 @@ from urllib.parse import urlparse
 import regex as reg
 
 
+from sys import path
+path.append("../utils") # this is hacky --> dont love it but it works for importing sibling modules
+from utils.request_responses import request_response_description_map ## 
+from utils.subscription_site_set import subscription_site_set
+  
 '''
-    Process_HN_Posts : note - this class is mostly used to more easily pass around objects/data-structures
-            The Following methods are used to 
+    Process_HN_Posts : 
+                
+            The Following Class can be used to process the Hacker news posts for the bot by
+                i    - getting a list of the top 500 posts, via - get_top_posts()          TODO -- add other options as well (maybe new/ask/show ...)
+                ii   - testing some range of those posts to see if they contain a url to a site that requires a subscription, via - test_n_posts(self, start, stop):
+                    
+                        ~ and then all the urls to sites that require a subscription are saved in a list as a tuple of (<id_num>, <url>, <detail_map>)
+                
+                iv   -  and then the object 
+            note - this class is mostly used to more easily pass around objects/data-structures
 '''
 class Process_HN_Posts:
     
@@ -16,7 +29,7 @@ class Process_HN_Posts:
         
         self.completed_post_set = set()    # set of the posts which have aready been processed
 
-        self.hn_url_sub_post_list = []     # a list of tuples (<id_num>, <url>, <detail_map>) for all the posts with urls to websites that require subscription 
+        self.hn_url_sub_post_list = []     # a list of tuples (<id_num>, <detail_map>, <url>) for all the posts with urls to websites that require subscription 
         
         self.hn_failed_request_list = []   # list of lists of form -> [<id>, <requests-response>, <request-attemp-num>, <api-called>] 
 
@@ -26,248 +39,11 @@ class Process_HN_Posts:
         self.curr_post_url = None
         #self.curr_post_stat = None
 
-        self.request_response_description_map = {    100 : 'continue',
-                                                101 : 'switching_protocols',
-                                                102 : 'processing',
-                                                103 : 'checkpoint',
-                                                122 : 'request_uri_too_long',
-                                                200 : 'ok',
-                                                201 : 'created',
-                                                202 : 'accepted',
-                                                203 : 'non_authoritative_information',
-                                                204 : 'no_content',
-                                                205 : 'reset_content, reset',
-                                                206 : 'partial_content, partial',
-                                                207 : 'multiple_status',
-                                                208 : 'already_reported',
-                                                226 : 'im_used',
-                                                300 : 'multiple_choices',
-                                                301 : 'moved_permanently',
-                                                302 : 'found',
-                                                303 : 'see_other',
-                                                304 : 'not_modified',
-                                                305 : 'use_proxy',
-                                                306 : 'switch_proxy',
-                                                307 : 'temporary_redirect',
-                                                308 : 'permanent_redirect',
-                                                400 : 'bad_request',
-                                                401 : 'unauthorized',
-                                                402 : 'payment_required',
-                                                403 : 'forbidden',
-                                                404 : 'not_found',
-                                                405 : 'method_not_allowed',
-                                                406 : 'not_acceptable',
-                                                407 : 'proxy_authentication_required',
-                                                408 : 'request_timeout',
-                                                409 : 'conflict',
-                                                410 : 'gone',
-                                                411 : 'length_required',
-                                                412 : 'precondition_failed',
-                                                413 : 'request_entity_too_large',
-                                                414 : 'request_uri_too_large',
-                                                415 : 'unsupported_media_type',
-                                                416 : 'requested_range_not_satisfiable',
-                                                417 : 'expectation_failed',
-                                                418 : 'im_a_teapot',
-                                                421 : 'misdirected_request',
-                                                422 : 'unprocessable_entity',
-                                                423 : 'locked',
-                                                424 : 'failed_dependency',
-                                                425 : 'unordered_collection',
-                                                426 : 'upgrade_required',
-                                                428 : 'precondition_required',
-                                                429 : 'too_many_requests',
-                                                431 : 'header_fields_too_large',
-                                                444 : 'no_response',
-                                                449 : 'retry',
-                                                450 : 'blocked_by_windows_parental_controls',
-                                                451 : 'unavailable_for_legal_reasons',
-                                                499 : 'client_closed_request',
-                                                500 : 'internal_server_error',
-                                                501 : 'not_implemented',
-                                                502 : 'bad_gateway',
-                                                503 : 'service_unavailable',
-                                                504 : 'gateway_timeout',
-                                                505 : 'http_version_not_supported',
-                                                506 : 'variant_also_negotiates',
-                                                507 : 'insufficient_storage',
-                                                509 : 'bandwidth_limit_exceeded',
-                                                510 : 'not_extended',
-                                                511 : 'network_authentication_required'
-                                            }
+        self.request_response_description_map = request_response_description_map
         
-        self.subscription_site_set = set(    
-                                [ 'https://www.adweek.com',
-                                    'https://www.ad.nl',
-                                    'https://www.americanbanker.com',
-                                    'https://www.ambito.com',
-                                    'https://www.baltimoresun.com',
-                                    'https://www.barrons.com',
-                                    'https://www.bloombergquint.com',
-                                    'https://www.bloomberg.com',
-                                    'https://www.bndestem.nl',
-                                    'https://www.bostonglobe.com',
-                                    'https://www.bd.nl',
-                                    'https://www.brisbanetimes.com.au',
-                                    'https://www.businessinsider.com',
-                                    'https://www.caixinglobal.com',
-                                    'https://www.centralwesterndaily.com.au',
-                                    'https://cen.acs.org',
-                                    'https://www.chicagotribune.com',
-                                    'https://www.corriere.it',
-                                    'https://www.chicagobusiness.com',
-                                    'https://www.dailypress.com',
-                                    'https://www.gelderlander.nl',
-                                    'https://www.groene.nl',
-                                    'https://www.destentor.nl',
-                                    'https://speld.nl',
-                                    'https://www.tijd.be',
-                                    'https://www.volkskrant.nl',
-                                    'https://www.demorgen.be',
-                                    'https://www.denverpost.com',
-                                    'https://www.df.cl',
-                                    'https://www.editorialedomani.it',
-                                    'https://www.dynamed.com',
-                                    'https://www.ed.nl',
-                                    'https://www.elmercurio.com',
-                                    'https://www.elpais.com',
-                                    'https://www.elperiodico.com',
-                                    'https://www.elu24.ee',
-                                    'https://www.britannica.com',
-                                    'https://www.estadao.com.br',
-                                    'https://www.examiner.com.au',
-                                    'https://www.expansion.com',
-                                    'https://www.fnlondon.com',
-                                    'https://www.financialpost.com',
-                                    'https://www.ft.com',
-                                    'https://www.firstthings.com',
-                                    'https://www.foreignpolicy.com',
-                                    'https://www.fortune.com',
-                                    'https://www.genomeweb.com',
-                                    'https://www.glassdoor.com',
-                                    'https://www.globes.co.il',
-                                    'https://www.grubstreet.com',
-                                    'https://www.haaretz.co.il',
-                                    'https://www.haaretz.com',
-                                    'https://harpers.org',
-                                    'https://www.courant.com',
-                                    'https://www.hbr.org',
-                                    'https://www.hbrchina.org',
-                                    'https://www.heraldsun.com.au',
-                                    'https://fd.nl',
-                                    'https://www.historyextra.com',
-                                    'https://www.humo.be',
-                                    'https://www.ilmanifesto.it',
-                                    'https://www.inc.com',
-                                    'https://www.interest.co.nz',
-                                    'https://www.investorschronicle.co.uk',
-                                    'https://www.lecho.be',
-                                    'https://labusinessjournal.com',
-                                    'https://www.lanacion.com.ar',
-                                    'https://www.repubblica.it',
-                                    'https://www.lastampa.it',
-                                    'https://www.latercera.com',
-                                    'https://www.lavoixdunord.fr',
-                                    'https://www.ledevoir.com',
-                                    'https://www.leparisien.fr',
-                                    'https://www.lesechos.fr',
-                                    'https://www.loebclassics.com',
-                                    'https://www.lrb.co.uk',
-                                    'https://www.latimes.com',
-                                    'https://sloanreview.mit.edu',
-                                    'https://www.technologyreview.com',
-                                    'https://www.medium.com',
-                                    'https://www.medscape.com',
-                                    'https://mexiconewsdaily.com',
-                                    'https://www.mv-voice.com',
-                                    'https://www.nationalgeographic.com',
-                                    'https://www.nydailynews.com',
-                                    'https://www.nrc.nl',
-                                    'https://www.ntnews.com.au',
-                                    'https://www.nationalpost.com',
-                                    'https://www.nzz.ch',
-                                    'https://www.nymag.com',
-                                    'https://www.nzherald.co.nz',
-                                    'https://www.ocregister.com',
-                                    'https://www.orlandosentinel.com',
-                                    'https://www.pzc.nl',
-                                    'https://www.paloaltoonline.com',
-                                    'https://www.parool.nl',
-                                    'https://www.postimees.ee',
-                                    'https://qz.com',
-                                    'https://www.quora.com',
-                                    'https://quotidiani.gelocal.it',
-                                    'https://republic.ru',
-                                    'https://www.reuters.com',
-                                    'https://www.sandiegouniontribune.com',
-                                    'https://www.sfchronicle.com',
-                                    'https://www.scientificamerican.com',
-                                    'https://seekingalpha.com',
-                                    'https://slate.com',
-                                    'https://sofrep.com',
-                                    'https://www.statista.com',
-                                    'https://www.startribune.com',
-                                    'https://www.stuff.co.nz',
-                                    'https://www.sun-sentinel.com',
-                                    'https://www.techinasia.com',
-                                    'https://www.telegraaf.nl',
-                                    'https://www.adelaidenow.com.au',
-                                    'https://www.theadvocate.com.au',
-                                    'https://www.theage.com.au',
-                                    'https://www.the-american-interest.com',
-                                    'https://www.theathletic.com',
-                                    'https://www.theathletic.co.uk',
-                                    'https://www.theatlantic.com',
-                                    'https://www.afr.com',
-                                    'https://www.theaustralian.com.au',
-                                    'https://www.bizjournals.com',
-                                    'https://www.canberratimes.com.au',
-                                    'https://www.thecourier.com.au',
-                                    'https://www.couriermail.com.au',
-                                    'https://www.thecut.com',
-                                    'https://www.dailytelegraph.com.au',
-                                    'https://www.thediplomat.com',
-                                    'https://www.economist.com',
-                                    'https://www.theglobeandmail.com',
-                                    'https://www.theherald.com.au',
-                                    'https://www.thehindu.com',
-                                    'https://www.irishtimes.com',
-                                    'https://www.kansascity.com',
-                                    'https://www.mercurynews.com',
-                                    'https://www.themercury.com.au',
-                                    'https://www.mcall.com',
-                                    'https://www.thenation.com',
-                                    'https://www.thenational.scot',
-                                    'https://www.newstatesman.com',
-                                    'https://www.nytimes.com',
-                                    'https://www.newyorker.com',
-                                    'https://www.news-gazette.com',
-                                    'https://www.theolivepress.es',
-                                    'https://www.inquirer.com',
-                                    'https://www.thesaturdaypaper.com.au',
-                                    'https://www.seattletimes.com',
-                                    'https://www.spectator.com.au',
-                                    'https://www.spectator.co.uk',
-                                    'https://www.smh.com.au',
-                                    'https://www.telegraph.co.uk',
-                                    'https://www.thestar.com',
-                                    'https://www.wsj.com',
-                                    'https://www.washingtonpost.com',
-                                    'https://www.thewrap.com',
-                                    'https://www.themarker.com',
-                                    'https://www.the-tls.co.uk',
-                                    'https://www.towardsdatascience.com',
-                                    'https://www.trouw.nl',
-                                    'https://www.tubantia.nl',
-                                    'https://www.vanityfair.com',
-                                    'https://www.vn.nl',
-                                    'https://www.vulture.com',
-                                    'https://journalnow.com',
-                                    'https://www.wired.com',
-                                    'https://www.worldpoliticsreview.com',
-                                    'https://www.zeit.de' ]
-                                )
-      
+        self.subscription_site_set = subscription_site_set
+        
+        
     
 
     '''
@@ -299,7 +75,7 @@ class Process_HN_Posts:
             self.hn_top_posts_list  =  hn_ts_request.json()   # this line is redundant but serves as a comment
         else:
             print(f"Error: request status code is : {hn_ts_request.status_code},  {self.request_response_description_map[int(hn_ts_request.status_code)]}") 
-            self.hn_top_posts_list = [-1]
+            self.hn_top_posts_list = [hn_ts_request.status_code]
 
     
 
@@ -445,36 +221,49 @@ class Process_HN_Posts:
     '''
     # TODO -- change returns to field state, and add function comment
     def test_n_posts(self, start, stop):
+      
+      # step 0 -- inital error checking and correcting
+      if len(self.hn_top_posts_list) == 1 :
+        print(f"Error : initial API request to HackerNews failed with response - {self.hn_top_posts_list[0]} ")
+      
+      else:
+        if len(self.hn_top_posts_list) < start :
+          print(f"Error : The start index - {start} - is out of bounds. There are only {len(self.hn_top_posts_list)} posts ")
+          return
+        elif len(self.hn_top_posts_list) < stop :
+          print(f":: warning :: The stop index - {stop} - is out of bounds. There are only {len(self.hn_top_posts_list)} posts ")
+          stop = len(self.hn_top_posts_list)
+      
+      
+        # a - for each post-id in the list of the top hn posts from start->stop
+        for post_num in self.hn_top_posts_list[start:stop]:
+          self.curr_post_id = post_num
 
-      # a - for each post-id in the list of the top hn posts from start->stop
-      for post_num in self.hn_top_posts_list[start:stop]:
-        self.curr_post_id = post_num
-
-        # b - make sure that the post-id was not already processed previously
-        if self.curr_post_id not in self.completed_post_set:
-          
-          # c - next call the hn api to get the post details
-          self.get_post_details()
-          
-          # c-1 : if the post returns an error : add to list of errors with the error number --> to be processed later after a try
-          #       save as a list [<id>, <requests-response>, <request-attemp-num>, <api-called>] 
-          if type(self.curr_post_details) != type({}) :
-            self.hn_failed_request_list.apppend([self.curr_post_id, self.curr_post_details, 1, "details" ])
-
-          # c-2 : if the the post returns a ok resonsem evaluate the details
-          else:
+          # b - make sure that the post-id was not already processed previously
+          if self.curr_post_id not in self.completed_post_set:
             
-            # d : first determine if the current post url is in the set of webstes the require a subscription
-            has_sub_block, url = self.post_has_sub_block()
-
-            # d-1 : if yes, then add a tuple if  (id, url, post_details)  to the list of urls -> to process (find internet-archive snapshots)
-            if has_sub_block:
-              self.hn_url_sub_post_list.append( (self.curr_post_id, url, self.curr_post_details) )
+            # c - next call the hn api to get the post details
+            self.get_post_details()
             
-            # d-2 : otherwise add it to the completed post set and move on, (if the url is not present maybe add some other process)
-            else :      
-              self.completed_post_set.add(self.curr_post_id)
+            # c-1 : if the post returns an error : add to list of errors with the error number --> to be processed later after a try
+            #       save as a list [<id>, <requests-response>, <request-attemp-num>, <api-called>] 
+            if type(self.curr_post_details) != type({}) :
+              self.hn_failed_request_list.apppend([self.curr_post_id, self.curr_post_details, 1, "details" ])
+
+            # c-2 : if the the post returns a ok resonsem evaluate the details
+            else:
               
+              # d : first determine if the current post url is in the set of webstes the require a subscription
+              has_sub_block, url = self.post_has_sub_block()
+
+              # d-1 : if yes, then add a tuple if  (id,  post_details, url)  to the list of urls -> to process (find internet-archive snapshots)
+              if has_sub_block:
+                self.hn_url_sub_post_list.append( (self.curr_post_id, self.curr_post_details, url ) )
+              
+              # d-2 : otherwise add it to the completed post set and move on, (if the url is not present maybe add some other process)
+              else :      
+                self.completed_post_set.add(self.curr_post_id)
+                
         
 '''
     TODO --> 
