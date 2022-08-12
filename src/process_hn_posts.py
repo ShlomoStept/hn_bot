@@ -1,3 +1,10 @@
+'''
+    Future TODO --> 
+        1. processing logic for different request failure responses
+            
+        2. possible text processing : note the &#x2 repeated pattern ->> 0x0002 or --> possibly XML (need to keep in mind to test for binary charchter codes that can occur and clean them before testing for presence of a url)
+'''
+
 
 import requests
 from urllib.parse import urlparse
@@ -8,7 +15,9 @@ from sys import path
 path.append("../utils") # this is hacky --> dont love it but it works for importing sibling modules
 from utils.request_responses import request_response_description_map ## 
 from utils.subscription_site_set import subscription_site_set
-  
+
+
+
 '''
     Process_HN_Posts : 
                 
@@ -236,8 +245,7 @@ class Process_HN_Posts:
       
       
         # a - for each post-id in the list of the top hn posts from start->stop
-        for post_num in self.hn_top_posts_list[start:stop]:
-          self.curr_post_id = post_num
+        for self.curr_post_id in self.hn_top_posts_list[start:stop]:
 
           # b - make sure that the post-id was not already processed previously
           if self.curr_post_id not in self.completed_post_set:
@@ -265,9 +273,3 @@ class Process_HN_Posts:
                 self.completed_post_set.add(self.curr_post_id)
                 
         
-'''
-    TODO --> 
-        1. processing logic for different request failure responses
-            
-        2. possible text processing : note the &#x2 repeated pattern ->> 0x0002 or --> possibly XML (need to keep in mind to test for binary charchter codes that can occur and clean them before testing for presence of a url)
-'''
