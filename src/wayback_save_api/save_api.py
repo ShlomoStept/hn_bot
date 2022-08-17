@@ -22,6 +22,7 @@
 import re
 import time
 from datetime import datetime
+import time
 from typing import Dict, Optional
 
 import requests
@@ -50,11 +51,12 @@ class Wayback_Machine_Save_API:
         url: str,
         user_agent: str = DEFAULT_USER_AGENT,
         max_tries: int = 8,
+        global_error_log = [],
     ) -> None:
         self.url = str(url).strip().replace(" ", "%20")
         self.request_url = "https://web.archive.org/save/" + self.url
         self.user_agent = user_agent
-        self.request_headers: Dict[str, str] = {"User-Agent": self.user_agent}
+        self.request_headers: Dict[str, str] = {"User-Agent": self.user_agent } # TODO 'Connection':'close'}
         if max_tries < 1:
             raise ValueError("max_tries should be positive")
         self.max_tries = max_tries
@@ -74,6 +76,10 @@ class Wayback_Machine_Save_API:
         self.wayback_save_failed = None
         self.exceeded_wayback_api_limit = None
         self.fail_error_explaination = None
+        
+        self.error_log = global_error_log
+        self.number_of_tries = None
+        self.time_range = [0,0]  # [start_time, end_time]
 
 
     @property
@@ -131,6 +137,7 @@ class Wayback_Machine_Save_API:
                 f"Save Page Now limits saving 15 URLs per minutes. "
                 f"Try waiting for 5 minutes and then try again."
             )
+            self.error_log.append(f" {str(time.asctime())} --- Error ::  get_save_request_headers() Request status code returned with status code = {self.status_code} and -->\n\t {self.fail_error_explaination}" ) 
 
         # why 509?
         # see https://github.com/akamhy/waybackpy/pull/99
@@ -142,6 +149,7 @@ class Wayback_Machine_Save_API:
                 f"Can not save '{self.url}'. You have probably reached the "
                 f"limit of active sessions."
             )
+            self.error_log.append(f" {str(time.asctime())} --- Error ::  get_save_request_headers() Request status code returned with status code = {self.status_code} and -->\n\t {self.fail_error_explaination}" )
 
     """
         Three regexen (like oxen?) are used to search for the
@@ -214,9 +222,8 @@ class Wayback_Machine_Save_API:
 
         if match is None or len(match.groups()) != 1:
             # TODO --> fix this error --> get rid of raising the error  --> quick fix == try & catch 
-            raise ValueError(
-                f"Can not parse timestamp from archive URL, '{self._archive_url}'."
-            )
+            self.error_log.append( f" {str(time.asctime())} --- Error :: timestamp() Can not parse timestamp from archive URL, '{self._archive_url}" )
+            return None         
 
         string_timestamp = match.group(1)
         timestamp = datetime.strptime(string_timestamp, "%Y%m%d%H%M%S")
@@ -240,6 +247,7 @@ class Wayback_Machine_Save_API:
     """
     def save(self) -> str:
         
+        self.time_range[0] = time.time()
         self.saved_archive = None
         tries = 0
 
@@ -254,16 +262,33 @@ class Wayback_Machine_Save_API:
                 self.wayback_save_failed = False
                 self.exceeded_wayback_api_limit = False
                 self._archive_url = self.saved_archive
-                self.timestamp()
-                return self.saved_archive
+                
+                
+                result = self.timestamp() # changed the timestamp to return None if some error occured, so we dont raise an exception TODO --> fix this entire mess
+                if result != None :    
+                
+                    # Added --> 
+                    self.number_of_tries = tries
+                    self.time_range[1] = time.time()
+                    # <-- Added 
+                    
+                    
+                    return self.saved_archive
 
             tries += 1
             if tries >= self.max_tries:
                 self.wayback_save_failed = True
                 self.exceeded_wayback_api_limit = True
+                
                 self.fail_error_explaination = str(
                     f"Tried {tries} times but failed to save "
                     f"and retrieve the archive for {self.url}.\n"
                     f"Response URL:\n{self.response_url}\n"
                     f"Response Header:\n{self.headers}"
                 )
+                self.error_log.append(f" {str(time.asctime())} --- Error ::   save() Failed {self.fail_error_explaination}" )
+            
+                # Added --> 
+                self.number_of_tries = tries
+                self.time_range[1] = time.time()
+                # <-- Added 

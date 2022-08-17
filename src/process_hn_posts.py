@@ -9,6 +9,7 @@
 import requests
 from urllib.parse import urlparse
 import regex as reg
+import time as T
 
 
 from sys import path
@@ -28,25 +29,26 @@ from utils.subscription_site_set import subscription_site_set
                         ~ and then all the urls to sites that require a subscription are saved in a list as a tuple of (<id_num>, <url>, <detail_map>)
                 
                 iv   -  and then the object 
-            note - this class is mostly used to more easily pass around objects/data-structures
+            
+            TODO : make the requests more robust (headers, cookies, user-agents...)
+            
 '''
 class Process_HN_Posts:
     
-    def __init__(self):
+    def __init__(self, global_error_log):
         
         self.hn_top_posts_list = None
         
         self.completed_post_set = set()    # set of the posts which have aready been processed
 
-        self.hn_url_sub_post_list = []     # a list of tuples (<id_num>, <detail_map>, <url>) for all the posts with urls to websites that require subscription 
+        self.posts_to_process_list = []     # list of ( <post_num>, <url>) tuples for all the posts with urls to websites that require subscription 
         
-        self.hn_failed_request_list = []   # list of lists of form -> [<id>, <requests-response>, <request-attemp-num>, <api-called>] 
+        self.error_log = global_error_log   # list of errors that occurend durint the process
 
-        # these are tobe used when testing each post (determine if this is needed)
+        # variables used when testing each post (determine if this is needed)
         self.curr_post_id = None
         self.curr_post_details = None
         self.curr_post_url = None
-        #self.curr_post_stat = None
 
         self.request_response_description_map = request_response_description_map
         
@@ -62,8 +64,8 @@ class Process_HN_Posts:
                         Note : this will be used to ensure that posts arent tested twice -> once processing has succedded in part-2
                         
     '''
-    def add_completed_post(self, url_):
-      self.completed_post_set.add(url_)
+    def add_completed_posts(self, set_of_fully_completed_posts):
+      self.completed_post_set.update(set_of_fully_completed_posts)
     
 
 
@@ -83,8 +85,10 @@ class Process_HN_Posts:
         if hn_ts_request.status_code == 200:
             self.hn_top_posts_list  =  hn_ts_request.json()   # this line is redundant but serves as a comment
         else:
-            print(f"Error: request status code is : {hn_ts_request.status_code},  {self.request_response_description_map[int(hn_ts_request.status_code)]}") 
-            self.hn_top_posts_list = [hn_ts_request.status_code]
+          # TODO -->  and make everything a catch try         
+          error = f" {str(T.asctime())} --- Error :: get_top_posts() :: Request returned status_code : {hn_ts_request.status_code}, {self.request_response_description_map[int(hn_ts_request.status_code)]} "
+          self.error_log.append(error)
+          self.hn_top_posts_list = None
 
     
 
@@ -103,10 +107,12 @@ class Process_HN_Posts:
         
         if hn_post_request.status_code == 200:
             self.curr_post_details  =  hn_post_request.json()   
-        
+  
         else:
-            print(f"Error: request status code is : {hn_post_request.status_code},  {self.request_response_description_map[int(hn_post_request.status_code)]}") 
-            self.curr_post_details = hn_post_request.status_code
+          # TODO -->  and make everything a catch try         
+          error = f" {str(T.asctime())} --- Error :: get_post_details() :: Request returned status_code : {hn_post_request.status_code}, {self.request_response_description_map[int(hn_post_request.status_code)]} "
+          self.error_log.append(error)
+          self.curr_post_details = None
     
     
 
@@ -198,16 +204,21 @@ class Process_HN_Posts:
         Function 5 :  
                 post_has_sub_block() - returns True if the url* is in the set of urls that requires subscritptions, otherwise False
                     
-                    note: * if any of the urls in the diff_url-flavor-list, is in the set (i.e. if the core/parent site is in the sub-set)
+                    note: * if any of the urls in the diff_url-flavor-list, it shoud return True (i.e. if the core/parent site is in the sub-set)
     '''
-    # TODO -- change returns to field state, and add function comment
     def post_has_sub_block(self):
+      
+      # Step 1 : get the urls in the url field or in the text of the current posts details
       post_url_list = self.get_post_url()
 
-        # TODO - Curretly we return the first bad-url on list, but might want to search all
+      # TODO - Curretly we return the first bad-url on list, but might want to search all
+      
+      # Step 2 : for all the urls foudn if curr post details, (a) generate all the possible url derivations *1*,
       for post_url_ in post_url_list :
-        possible_url_list =  self.get_core_url_list(post_url_)
+        possible_url_list =  self.get_core_url_list(post_url_) 
+        # *1* Some parent sites have different subdomains or may be in a diffenrent string form, but lead to the same core site, so this finds (hopefully) all the variants
 
+        # (b) and test if one of the current sites url varients leads to a parent site that requires a sub, and return findings
         for possible_url in possible_url_list:
           if possible_url in self.subscription_site_set:
             return (True, post_url_)
@@ -221,31 +232,22 @@ class Process_HN_Posts:
         Function 6 :  
             test_n_posts() - for each posts in the top_post_list, from start->stop , we process it 
                                 a - if the url exists and is in the set, we add the (id,url,post_details) 
-                                        to the hn_url_sub_post_list, for further processing in part 2
+                                        to the posts_to_process_list, for further processing in part 2
                                 
-                                b - TODO --> if the request fails, we add this to the  hn_failed_request_list, to possiby process later <-- TODO
+                          DONE  b -  --> if the request fails, we add this to the  error_log, to possiby process later 
                                 
                                 c - for all other cases (i.e. if the post does not contain a url or the url is not in the set of website_urls that need a subscritption)
                                         we add this to the --> completed_post_set
     '''
-    # TODO -- change returns to field state, and add function comment
-    def test_n_posts(self, start, stop):
+    def process_all_posts(self):
       
       # step 0 -- inital error checking and correcting
-      if len(self.hn_top_posts_list) == 1 :
+      if self.hn_top_posts_list == None :
         print(f"Error : initial API request to HackerNews failed with response - {self.hn_top_posts_list[0]} ")
       
       else:
-        if len(self.hn_top_posts_list) < start :
-          print(f"Error : The start index - {start} - is out of bounds. There are only {len(self.hn_top_posts_list)} posts ")
-          return
-        elif len(self.hn_top_posts_list) < stop :
-          print(f":: warning :: The stop index - {stop} - is out of bounds. There are only {len(self.hn_top_posts_list)} posts ")
-          stop = len(self.hn_top_posts_list)
-      
-      
         # a - for each post-id in the list of the top hn posts from start->stop
-        for self.curr_post_id in self.hn_top_posts_list[start:stop]:
+        for self.curr_post_id in self.hn_top_posts_list[0:150]: # TODO TODO TODO --> take off the 0:150 this is just to speed up testing
 
           # b - make sure that the post-id was not already processed previously
           if self.curr_post_id not in self.completed_post_set:
@@ -253,11 +255,10 @@ class Process_HN_Posts:
             # c - next call the hn api to get the post details
             self.get_post_details()
             
-            # c-1 : if the post returns an error : add to list of errors with the error number --> to be processed later after a try
-            #       save as a list [<id>, <requests-response>, <request-attemp-num>, <api-called>] 
-            if type(self.curr_post_details) != type({}) :
-              self.hn_failed_request_list.apppend([self.curr_post_id, self.curr_post_details, 1, "details" ])
-
+            # c-1 : if the post returns an error : skip error already added to error log
+            if self.curr_post_details == None :
+              continue
+            
             # c-2 : if the the post returns a ok resonsem evaluate the details
             else:
               
@@ -266,7 +267,7 @@ class Process_HN_Posts:
 
               # d-1 : if yes, then add a tuple if  (id,  post_details, url)  to the list of urls -> to process (find internet-archive snapshots)
               if has_sub_block:
-                self.hn_url_sub_post_list.append( (self.curr_post_id, self.curr_post_details, url ) )
+                self.posts_to_process_list.append( (self.curr_post_id, url ) )
               
               # d-2 : otherwise add it to the completed post set and move on, (if the url is not present maybe add some other process)
               else :      

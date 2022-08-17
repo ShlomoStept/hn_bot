@@ -1,5 +1,7 @@
 ## TODO -- use main to run the program (not just for testing )
 
+import time ## use this to make sure we only run a process every 5 minutes 
+
 from src.process_hn_posts import Process_HN_Posts
 from src.get_archived_url import Get_Archived_URL
 
@@ -11,15 +13,28 @@ from src.get_archived_url import Get_Archived_URL
 # a - initialize an object of the process_hn_posts class
 process_hn_posts = Process_HN_Posts()
 
+
 # b - get the top 500 post ids
+
+# TODO --> WHILE loop that waits:
+'''
+run_number = 0
+while 1 :
+    curr_time = timer.now()
+    if curr_time < last_timestamp + 5*60 :
+        wait_time = curr_time - (last_timestamp + 5*60)
+    
+'''
 process_hn_posts.get_top_posts()
 
 # TODO --> need to check here if the response was to hn-API failed  --> currently its built into the test_n_posts() function
 
 # c - test the first 50 posts to see if any of their urls require a subscription # process_hn_posts.test_n_posts(490,600)
-process_hn_posts.test_n_posts(0,500)
+process_hn_posts.test_n_posts(0,100)
 
 # d - print out how many do, and how many dont and a list of the id/details
+
+# TODO --> log the current run number --> before any possible errors and the time of the day the run started
 
 print("-"*30)
 print(f"We have {len(process_hn_posts.completed_post_set)} posts of the {500}, that ::Do NOT:: contain urls to websites that require a subsription")
@@ -27,7 +42,7 @@ print(process_hn_posts.completed_post_set)
 print()
 print(f"We have {len(process_hn_posts.hn_url_sub_post_list)} posts of the {500}, that ::DO Indeed:: contain urls to websites that require a subsription, and here they are ")
 [ print(post[2]) for post in process_hn_posts.hn_url_sub_post_list]
-print("-"*30)
+# print("-"*30)
 
 
 
@@ -35,23 +50,31 @@ print("-"*30)
 # test to see that part 2 works
 #---------------------------------------------------------------------------------------------------------
 if len(process_hn_posts.hn_url_sub_post_list) > 0:
-    get_archived_urls_for_posts = Get_Archived_URL(process_hn_posts.hn_url_sub_post_list)
     
-    get_archived_urls_for_posts.process_list_of_posts()
+    get_archived_urls= Get_Archived_URL(process_hn_posts.hn_url_sub_post_list)
     
-    number_of_processed_urls = len(get_archived_urls_for_posts.successfully_processed_post_set)
+    get_archived_urls.process_list_of_posts()
+    
+    number_of_processed_urls = len(get_archived_urls.successfully_processed_post_set)
     if number_of_processed_urls > 0:
-        [print(f"For post_num : {arc_url_obj[0]} : we have the archived url ->{arc_url_obj[3]}") for arc_url_obj in get_archived_urls_for_posts.successfully_processed_post_list ]
+        [print(f"For post_num : {arc_url_obj[0]} : we have the archived url ->{arc_url_obj[3]}") for arc_url_obj in get_archived_urls.successfully_processed_post_list ]
     
-    if get_archived_urls_for_posts.run_wbm_save  == True :
-        get_archived_urls_for_posts.save_wayback_snapshots()
+    if get_archived_urls.run_wbm_save  == True :
+        get_archived_urls.save_wayback_snapshots()
         
-        if len(get_archived_urls_for_posts.successfully_processed_post_set) > number_of_processed_urls :
+        if len(get_archived_urls.successfully_processed_post_set) > number_of_processed_urls :
+            
             #TODO --> figure out how to only obtain those --> maybe have the part3 run and save all the post-ids of the ones it commented on
             #         then run it again and there wont be any dupliate work as long as we check each post-id on the set of the sucessfully-commented 
-            [print(f"For post_num : {arc_url_obj[0]} : we have the archived url ->{arc_url_obj[3]}") for arc_url_obj in get_archived_urls_for_posts.successfully_processed_post_list ]
-            
-        
+            [print(f"For post_num : {arc_url_obj[0]} : we have the archived url ->{arc_url_obj[3]}") for arc_url_obj in get_archived_urls.successfully_processed_post_list ]
+
+
+
+
+
+    #TODO ---> add the sucessfully completed list to the --> process_hn_posts.add_completed_post
+    
+    #TODO --> add a timer to the class --> to tracke the number of calls to the 
         
 '''
         We have 470 posts of the 500, that ::Do NOT:: contain urls to websites that require a subsription

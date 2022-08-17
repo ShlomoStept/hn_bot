@@ -47,8 +47,7 @@ class Get_Archived_URL:
         
         self.list_of_url_objs_to_process = hn_url_sub_post_list  ## key part == get the list of tuples (<id_num>, <detail_map>, <url>) of the posts we want to process 
         
-        self.successfully_processed_post_set = set()  # set of the post-id numbers to the posts that archives were sucessfully found
-        
+        self.successfully_processed_post_set = set()  # set of the post-id numbers to the posts that archives were sucessfully found 
         # TODO might want to put this into a map {} of <id_num> : (<id_num>, <detail_map>, <url>, <archive-url>) to process easier in the part 3
         self.successfully_processed_post_list = [] # list of tuples -(<id_num>, <detail_map>, <url>, <archive-url>)- for the sucessufly processed urls/posts
         
@@ -57,18 +56,18 @@ class Get_Archived_URL:
         
         self.failed_request_list = []   # list of lists of form -> [<id>, <requests-response>, <request-attemp-num>, <api-called>] 
         
-        self.curr_post_url = None
-        
         self.request_response_description_map = request_response_description_map
         self.dynamic_site_set = dynamic_site_set
         
         #--> TODO save this and dont process the urls from these site, or at least alter the way you do (for example bloomberg)
-        #self.dynamic_site_set = dynamic_site_set 
+        self.dynamic_site_set = dynamic_site_set 
         
 
         # these are to be used when testing each url object, and if the archive failed for each of the diff types
         #   (determine if this is needed)
         self.curr_url_obj_processing = None   # will have the form of (<id_num>, <detail_map>, <url>)
+        self.curr_post_url = None
+        
         
         self.curr_wbm_get_failed = None
         self.curr_act_get_failed = None
@@ -104,17 +103,15 @@ class Get_Archived_URL:
                     
             --> TODO this gets complicated quickly so first get MVP done, before touching this 
             For now just use a timer, and send out 15 per minute to wayback_machine and act, and then start the timer for a minute before the next 15 are sent out 
-        
-        self.timer = None
-        self.num_wbm_api_calls = None
-        self.num_act_api_calls = None
         '''
         
         
         
         
     '''
-    QQ TODO -- why did i put this function here?? --> determine what this functions intended purpose was
+    QQ TODO -- why did i put this function here?? --> determine what this functions intended purpose was --> add the archived_urls that were found, to the process hn-post class, so we skip pulingth epost details for post-nums that were already processed
+                        -> however i think this should only be done once the urchiveurl comment is posted to hackers-news
+                        --> or create a method to revisit failed hn comment posts, without starting from scratch and running the whole process again
         helper function 1 :
                 add_completed_posts_to_process_post_object_list() --  adds a post to the completed list
                         Note : this will be used to ensure that posts arent tested twice -> once processing has succedded in part-2
@@ -159,6 +156,23 @@ class Get_Archived_URL:
             self.failed_to_process_map.remove( self.curr_url_obj_processing[0] )
     
     
+    '''
+        helper function 3 :
+               reset_run_objects() : resets all the varaibles that might have carryover values from the previous run
+
+                    # Note : dont reset --> self.curr_url_obj_processing  we still need this 
+    '''
+    def reset_run_objects(self):
+        self.curr_post_url = None
+        self.curr_wbm_get_failed = None
+        self.curr_act_get_failed = None
+        self.ac_today_save_api_returned_wip = None
+        self.curr_act_save_failed = None
+        self.curr_wbm_response_obj = None
+        self.curr_act_response_obj = None
+        self.curr_post_archive_url = None
+        self.wb_save_api = None 
+        
     
     
     
@@ -172,6 +186,7 @@ class Get_Archived_URL:
     '''
     def process_list_of_posts(self, start=-1, end=-1):
         
+        # if the start or end was not specifed, set the values to be all the posts
         if start==-1 and end==-1:
             start = 0 
             end = len(self.list_of_url_objs_to_process)
@@ -185,16 +200,7 @@ class Get_Archived_URL:
                 continue
             
             else :
-                print("impliment object reset")
-            # TODO --> 
-            #    self.reset_curr_objects() # TODO -- reset all teh curr objects to their default values 
-            # TODO _ Step 1 : write down all the variables potentially used in each run, and their defult values.
-            # TODO __Step 2 : by default the use of true/false values for determining if an action was sucessful should make this reset irrelevant but its good practice not to risk some slips throguh the cracks
-            # TODO --> 
-            
-            
-            # 0 -TODO- should i test it to see if the the post id num is int he set of succeded archive-url finds ? 
-            # KEY  --> for now assume if we are procesing it then it has yet to be processed
+                self.reset_run_objects()  # reset all the objects that might be used during the run
                  
             #  a - try to find an archived snapshot on wayback machine
             self.find_wayback() 
