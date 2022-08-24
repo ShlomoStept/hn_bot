@@ -9,5 +9,6 @@
 dynamic_site_set = set(    
                             [ 
                                 'https://www.bloomberg.com',
+                                "https://cen.acs.org",
                             ]
                       )

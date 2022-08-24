@@ -124,6 +124,8 @@ class Wayback_Machine_Save_API:
         self.status_code = self.response.status_code
         self.response_url = self.response.url
         session.close()
+        
+        # TODO --> ADD the number of tries to timer, and back off for a few minutes to not trigger, a ip block
 
         if self.status_code == 429:
             # why wait 5 minutes and 429?
@@ -150,6 +152,7 @@ class Wayback_Machine_Save_API:
                 f"limit of active sessions."
             )
             self.error_log.append(f" {str(time.asctime())} --- Error ::  get_save_request_headers() Request status code returned with status code = {self.status_code} and -->\n\t {self.fail_error_explaination}" )
+
 
     """
         Three regexen (like oxen?) are used to search for the
