@@ -1,7 +1,3 @@
-'''
-    TODO -> put header
-'''
-
 
 import requests
 from urllib.parse import urlparse
@@ -15,7 +11,7 @@ from utils.general.generate_core_urls import get_core_url_list
 
 from utils.unique_ids.user_agent_list import User_Agent_list, get_random_user_agent
 
-from ..utils.wayback_save_api.wb_save_api import Wayback_Machine_Save_API
+from ..utils.wayback_process.wb_save_api import Wayback_Machine_Save_API
 import time as T
 
 
@@ -343,7 +339,7 @@ class Process_Archived_Urls:
          
         # Step 1 : initalize all the variables to be used in the request to archive_today
         # archiveis - api hn_bot
-        headers = { "User-Agent": User_Agent_list["linux"][2],  "host": urlparse(str(r'https://archive.ph/')).netloc,'Connection':'close'}
+        headers = { "User-Agent": User_Agent_list["linux"][2],  "host": urlparse(str(r'https://archive.ph/')).netloc, 'Connection':'close'}
         
         data = { "url": url , "anyway": 1, }  
         act_post_kwargs = dict(timeout=120, allow_redirects=True, headers=headers, data=data)
@@ -411,7 +407,6 @@ class Process_Archived_Urls:
     '''------------------------------------------------------------------------------------------------
                 PART 4           :: --> FIND  <-- WAYBACK MACHINE    ::
                                        HELPER FUNCTION
-                
     ------------------------------------------------------------------------------------------------'''
 
     

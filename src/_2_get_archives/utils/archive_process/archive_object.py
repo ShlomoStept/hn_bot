@@ -1,11 +1,13 @@
 
-#TODO --> this doesnt seem to work so for now we wont try to do this 
+"""    
+    TODO --> Cloudfare bot detection is very good --> in the future use add playwrite and other bot avoidance detection tricks
+"""
 
 
 from .....utils.unique_ids.user_agent_list import User_Agent_list
 import random
 import time as T
-
+import requests
 
 class archive_today:
     
@@ -56,7 +58,6 @@ class archive_today:
         
         
         if found_archive :
-
             print("todo")            
         #** if it works ou want to save the session and the user infor and .. for user again, also process the timeout details and more...
         
