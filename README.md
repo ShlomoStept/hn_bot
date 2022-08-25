@@ -1,20 +1,35 @@
-# hn_bot 
-_________________
-## This Project Aims to Create a Bot that adds the internet Archive Link to any hackernews post with a newsite that requires a subscription to read (its a mouthfull)
+# hn_bot - HackerNews Archive Finding Bot 
+Searches all HackerNews top posts for links to websites that require a subscription, then find & posts a link to an archived snapshot of the article
 
-## Overview of the Process (initial thoughts)
+## Process 
+The Program follows the following 4 steps : (until a bug/server crash)
+1. It grabs all the top, new and, best posts on HackerNews
+    
+2. Determines which posts contain links to articles on websites that have subscription blocks 
+    - after x articles they require you to pay to read) 
+    
+3. Find the Archived snapshots of the articles.
+    - Mainly using WaybackMachine, since archive.today (archive.ph), utalizes cloudfare - whose bot detector is very robust
+    
+4. Post a link to the Archived snapshot as a Post Commment on HackerNews
+    
+    
+    
 
-    1. Part 1 : Utalizes the Hackernews API it get a list of the top 500 posts, 
-                  and for each post the url is tested against the set of known websites that require a subsription
-                - if a site requires a subscription this url is added to a list for further procesing'
-                - all other posts are added to a list of already processed posts
-                
-    2. Part 2 : Utalizing the Internet Archive API  **WARNING : Only 15 requests allowed per minute**
-                  
-                i   - use the url to see of a snapshot was taken -- if so grab the latest snapshot
-                ii  - otherwise --> generate/trigger the creation of a snapshot (TODO-figure out how to do this)
-                
-                iii - then send back the url to the snapshot, to be used in the next part
-                
-    3. Part 3 : Use the NH api to post a comment with the webarchive link and a 
-              ** Note: figure out how to make this pay for server costs (A/B-test diff call-for-actions)** 
+## State Of Project 
+The program works perfectly, Unfourtunatly **@dang** ( HackerNews's Infamous moderator ) blocked my bot, because bot = bad 🙄
+
+## Future Plans
+I had fun exploring creating a bot, using API's and learned a lot about an area of computer science that i knew nothing about beforehand. 
+So I'm not going to fight **@dang** even though hes killing my project.
+
+- i hope someone finds this project usefull or fun, feel free to expand on this and build something cool (or even something that evades detection 😉
+
+## Dependencies
+> beautifulsoup4==4.11.1
+
+> regex==2022.7.9
+
+> requests==2.28.1
+
+> urllib3==1.26.11
