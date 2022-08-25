@@ -4,15 +4,15 @@ Searches all HackerNews top posts for links to websites that require a subscript
 ## Process 
 The Program follows **4 steps** :
 
-        1. It grabs all the top, new and, best posts on HackerNews
+        1. It grabs all the top, new and, best posts on HackerNews.
     
-        2. Determines which posts contain links to articles on websites that have subscription blocks 
+        2. Determines which posts contain links to articles on websites that have subscription blocks.
                 - after x articles they require you to pay to read) 
     
         3. Find the Archived snapshots of the articles.
                 - Mainly using WaybackMachine, since archive.today (archive.ph), utilizes Cloudflare - whose bot detector is very robust
     
-        4. Post a link to the Archived snapshot as a Comment o
+        4. Post a link to the Archived snapshot as a Comment for that post.
     
     
     
