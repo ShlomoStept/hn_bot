@@ -1,4 +1,4 @@
-# hn_bot - HackerNews Archive Finding Bot 
+# hn_bot - Automated Archive Finder for HackerNews Posts
 Searches all HackerNews top posts for links to websites that require a subscription, then find & posts a link to an archived snapshot of the article
 
 ## Process 
