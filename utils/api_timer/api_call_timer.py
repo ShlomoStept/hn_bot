@@ -2,8 +2,6 @@
 import time as T
 
 import random
-from turtle import update
-
 
 #   1 -    TODO : make the requests more robust (headers, cookies, user-agents...)
 #   1 -    TODO : ADD COMMENTS AND HEADERS, AND BONUS == UNIT TESTS
@@ -193,3 +191,8 @@ class Api_Timer:
         elif set_value == "remove" :
             self.too_many_requests_ = False
             self.too_many_requests_timestamp = None
+            
+            
+            
+# TODO --> seperate out the waiting to a different function 
+# TODO --> seperate out the 429 value testing and logic

@@ -51,12 +51,15 @@ def main() :
     wayback_timer = Api_Timer("Wayback Machine", 12, 1, error_logger.logger) # Note each timer_object has its own error log (whearas the other objects share a global error log)
 
     # d - archive machine api timer
+     
     archive_today_timer_short_term = Api_Timer("Archive Today", 3, 1.25, error_logger.logger, random_wait_range=(7.0,11.0)) # short term to avoid, initl overloading requests trigger
     archive_today_timer_long_term = Api_Timer("Archive Today", 35, 60, error_logger.logger , random_wait_range=(15*60,30*60)) # long term to avoid, abnormal usage trigger
+    
     archive_today_timers = (archive_today_timer_short_term, archive_today_timer_long_term)
     
     # e - initalize the get url archives Class object
     get_archived_urls= Process_Archived_Urls([] ,wayback_timer, archive_today_timers, error_logger.logger ) #TODO
+    
     
     # f - initalize the get url archives Class object
     # TODO ---> only 1 a minute --> how do we eliminate the need to find the hmac
@@ -95,9 +98,13 @@ def main() :
         bot_run_timer.add_to_queue()
         
         
-        # Step 2 : (a) get the top 500 posts and then (b)process the first 100 posts (TODO  clean up part 1 code, and rename methods)
+        # Step 2 : (a) get the top 500 new posts, the top 500 best posts, and the top 500 new posts, then create a list of all the unique ones to process (TODO  clean up part 1 code, and rename methods)
         run_logger.logger.info(f"  --- :: Step 2 :: Grabbing the top/first 500 posts on hacker_news " )
+        
         process_hn_posts.get_top_posts()
+        process_hn_posts.get_best_posts()
+        process_hn_posts.get_new_posts()
+        
         process_hn_posts.process_all_posts()
 
 
@@ -106,7 +113,7 @@ def main() :
         #--------------------------------------------------------------------------------------------------------------
     
         posts_not_being_processed = set()
-        [ posts_not_being_processed.add(post_num)  for post_num in process_hn_posts.hn_top_posts_list  if post_num not in process_hn_posts.posts_to_process_list ]
+        [ posts_not_being_processed.add(post_num) for post_num in process_hn_posts.hn_top_posts_list  if post_num not in process_hn_posts.posts_to_process_list ]
         run_logger.logger.info("\t"+"--"*30)
         mesage_not_c = f"  ---->  There are {len(posts_not_being_processed)}  posts out of {len(process_hn_posts.hn_top_posts_list)}, that -- Do Not -- contain urls to websites that require a subsription"
         run_logger.logger.info(mesage_not_c)
@@ -147,9 +154,8 @@ def main() :
             # a - update the map of archoves to past as a comment 
             hn_poster.post_archive_map = get_archived_urls.processed_post_map
             
-            print("about to post comments")
             # b - now post them 
-            #hn_poster.post_comments()
+            hn_poster.post_comments()
             
             
         
@@ -177,7 +183,8 @@ def main() :
 
                     # for now we simply print  --> TODO make the upload_archive_comments
             
-                #hn_poster.post_comments()
+                # c - now we post the archived urls as comments
+                hn_poster.post_comments()
        
         
         

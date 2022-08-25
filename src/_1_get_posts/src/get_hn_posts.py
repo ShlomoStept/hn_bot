@@ -1,10 +1,3 @@
-'''
-    Future TODO --> 
-        1. processing logic for different request failure responses
-            
-        2. possible text processing : note the &#x2 repeated pattern ->> 0x0002 or --> possibly XML (need to keep in mind to test for binary charchter codes that can occur and clean them before testing for presence of a url)
-'''
-
 
 import requests
 from urllib.parse import urlparse
@@ -23,14 +16,11 @@ from utils.general.generate_core_urls import get_core_url_list
     Process_HN_Posts : 
                 
             The Following Class can be used to process the Hacker news posts for the bot by
-                i    - getting a list of the top 500 posts, via - get_top_posts()          TODO -- add other options as well (maybe new/ask/show ...)
-                ii   - testing some range of those posts to see if they contain a url to a site that requires a subscription, via - test_n_posts(self, start, stop):
-                    
-                        ~ and then all the urls to sites that require a subscription are saved in a list as a tuple of (<id_num>, <url>, <detail_map>)
-                
-                iv   -  and then the object 
+                i    - getting a list of hackernews posts (new, best, and top), via - get_top_posts()         
+                ii   - testing some range of those posts to see if they contain a url to a site that requires a subscription
+                    --> add if they do add to a list of posts to process --> ( <post_num>, <url>) tuples 
+                    --> if they are not add to completed post set
             
-            TODO : make the requests more robust (headers, cookies, user-agents...)
             
 '''
 class Process_HN_Posts:
@@ -70,7 +60,7 @@ class Process_HN_Posts:
     '''
     def add_completed_posts(self, set_of_fully_completed_posts) -> None:
       self.completed_post_set.update(set_of_fully_completed_posts)
-    
+    #------------------------------------------------------------------------------------ 
 
 
     
@@ -120,9 +110,12 @@ class Process_HN_Posts:
           error = f"  --- Error :: get_best_posts() :: Request returned status_code : {hn_ts_request.status_code}, {self.request_response_description_map[int(hn_ts_request.status_code)]} "
           self.error_log.error(error)
           self.hn_top_posts_list = None
+          
     #------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------
+
+
 
     '''
         Function 2 :  
@@ -145,7 +138,7 @@ class Process_HN_Posts:
           error = f"  --- Error :: get_post_details() :: Request returned status_code : {hn_post_request.status_code}, {self.request_response_description_map[int(hn_post_request.status_code)]} "
           self.error_log.error(error)
           self.curr_post_details = None
-    
+    #------------------------------------------------------------------------------------ 
     
 
 
@@ -180,7 +173,7 @@ class Process_HN_Posts:
         return post_url_list
       else :
         return []
-
+  #------------------------------------------------------------------------------------ 
 
 
 
@@ -208,7 +201,7 @@ class Process_HN_Posts:
             return (True, post_url_)
             
       return (False, post_url_list)
-        
+  #------------------------------------------------------------------------------------       
         
 
 
@@ -240,7 +233,10 @@ class Process_HN_Posts:
     
     def process_all_posts(self):
       
-      # Testing all the posts  TODO determine a filtering metric based on predicted impact score of post  --> also useful for using when deciding which 15 urls to use archive.today to save /search for 
+      # Testing all the posts  
+      # TODO determine a filtering metric based on predicted impact score of post  --> also useful for using when deciding which 15 urls to use archive.today to save /search for 
+      
+      # pre-step 0 : join the sets without duplicates
       set_of_all_hn_posts = self.add_sets([ self.hn_top_posts_list, self.hn_new_posts_list, self.hn_best_posts_list])
       if len(set_of_all_hn_posts) > 0 :
         self.hn_top_posts_list = list(set_of_all_hn_posts)
@@ -252,7 +248,6 @@ class Process_HN_Posts:
         self.error_log.error(error)
       
       else:
-        
         
         # a - for each post-id in the list of the top hn posts from start->stop
         for self.curr_post_id in self.hn_top_posts_list: # TODO TODO TODO --> take off the 0:150 this is just to speed up testing
