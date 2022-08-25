@@ -2,16 +2,17 @@
 Searches all HackerNews top posts for links to websites that require a subscription, then find & posts a link to an archived snapshot of the article
 
 ## Process 
-The Program follows the following 4 steps : (until a bug/server crash)
-1. It grabs all the top, new and, best posts on HackerNews
+The Program follows **4 steps** :
+
+        1. It grabs all the top, new and, best posts on HackerNews
     
-2. Determines which posts contain links to articles on websites that have subscription blocks 
-    - after x articles they require you to pay to read) 
+        2. Determines which posts contain links to articles on websites that have subscription blocks 
+                - after x articles they require you to pay to read) 
     
-3. Find the Archived snapshots of the articles.
-    - Mainly using WaybackMachine, since archive.today (archive.ph), utalizes cloudfare - whose bot detector is very robust
+        3. Find the Archived snapshots of the articles.
+                - Mainly using WaybackMachine, since archive.today (archive.ph), utalizes cloudfare - whose bot detector is very robust
     
-4. Post a link to the Archived snapshot as a Post Commment on HackerNews
+        4. Post a link to the Archived snapshot as a Post Commment on HackerNews
     
     
     
@@ -23,13 +24,23 @@ The program works perfectly, Unfourtunatly **@dang** ( HackerNews's Infamous mod
 I had fun exploring creating a bot, using API's and learned a lot about an area of computer science that i knew nothing about beforehand. 
 So I'm not going to fight **@dang** even though hes killing my project.
 
-- i hope someone finds this project usefull or fun, feel free to expand on this and build something cool (or even something that evades detection 😉
+- I hope someone finds this project usefull or fun, 
+- feel free to expand on this and build something cool (or even 🤫 something that evades detection 😉)
 
 ## Dependencies
-> beautifulsoup4==4.11.1
+Contents of requirements.txt
+        
+        
+        beautifulsoup4==4.11.1
+        regex==2022.7.9
+        requests==2.28.1
+        urllib3==1.26.11
+        
 
-> regex==2022.7.9
+to install via pip use: 
+        
+        pip install beautifulsoup4==4.11.1 regex==2022.7.9 requests==2.28.1  urllib3==1.26.11
 
-> requests==2.28.1
-
-> urllib3==1.26.11
+or via conda use:
+        
+        conda install beautifulsoup4==4.11.1 regex==2022.7.9  requests==2.28.1  urllib3==1.26.11
