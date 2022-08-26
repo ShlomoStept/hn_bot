@@ -63,7 +63,7 @@ def main() :
     
     # f - initalize the get url archives Class object
     # TODO ---> only 1 a minute --> how do we eliminate the need to find the hmac
-    hacker_news_timer = Api_Timer("HackerNews", 2, 1, error_logger.logger , 15, (10,15)) # short term to avoid, initl overloading requests trigger
+    hacker_news_timer = Api_Timer("HackerNews", 2, 1, error_logger.logger , 15, (17,25)) # short term to avoid, initial overloading requests trigger
     
     hn_poster = Post_Archive_Urls("HackerNews", {},  process_hn_posts.completed_post_set, hacker_news_timer, run_logger.logger, error_logger.logger)
 
