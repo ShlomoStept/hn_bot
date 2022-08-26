@@ -1,38 +1,38 @@
 
+# hn_bot - Automated Archive Finder for HackerNews Posts
+A Bot that searches for and posts links to archived versions of articles after scanning all of HackerNews' top articles for those that contain a link to a site that requires a subscription.
+
 <p align="center">
   <img src="https://user-images.githubusercontent.com/74121686/186787727-f1dd40ed-a5ec-4e82-b7e3-2cc292700bb6.png" width="200">
 </p>
 
-
-
-
-# hn_bot - Automated Archive Finder for HackerNews Posts
-Searches all HackerNews top posts for links to websites that require a subscription, then find & posts a link to an archived snapshot of the article
-
 ## Process 
 The Program follows **4 steps** :
+        
+        1. It collects all of HackerNews' top, new, and best posts.
 
-        1. It grabs all the top, new and, best posts on HackerNews.
-    
-        2. Determines which posts contain links to articles on websites that have subscription blocks.
-                - after x articles they require you to pay to read) 
-    
-        3. Find the Archived snapshots of the articles.
-                - Mainly using WaybackMachine, since archive.today (archive.ph), utilizes Cloudflare - whose bot detector is very robust
-    
-        4. Post a link to the Archived snapshot as a Comment for that post.
+        2. Identifies which posts include links to articles on websites with subscription blocks.
+            (i.e. After a certain number of articles, you must pay to read them.)
+
+        3. Locates the articles' archived snapshots.
+            - WaybackMachine is mostly used because archive.today (archive.ph) uses Cloudflare, which has a very robust bot detector.
+
+        4. Leaves a comment with a link to the Archived snapshot.
     
     
     
 ## State Of Project 
-The program works perfectly, Unfortunately **@dang** ( HackerNews’s Infamous moderator ) blocked my bot, because bot = bad 🙄
+Unfortunately, the application was blocked by the infamous moderator of HackerNews, **@dang**, because bot = bad 🙄
+However, the program works perfectly 
 
 ## Future Plans
-I had fun exploring creating a bot, using API's and learned a lot about an area of CS that I knew nothing about beforehand. 
-So, I'm not going to fight **@dang** even though he’s killing my project.
 
-- I hope someone finds this project useful or fun, 
-- feel free to expand on this and build something cool (or even 🤫 something that evades detection 😉)
+I enjoyed learning about building a bot and using APIs while also discovering a whole new field of computer science.
+So, even if **@dang** is ruining my project, I'm not going to fight him.
+
+
+- I hope someone finds this project entertaining or useful 
+- Feel free to expand on this and build something cool (or even 🤫 something that is undetectable 😉)
 
 ## Dependencies
 Contents of requirements.txt
