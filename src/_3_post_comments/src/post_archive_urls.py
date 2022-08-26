@@ -52,7 +52,7 @@ class Post_Archive_Urls :
     def post_comments(self):
         
         # a - itterate through all the posts
-        for post_num, archive_url in self.post_archive_map :
+        for post_num, archive_url in self.post_archive_map.items() :
             
             # step 1 : get the hmac value
             
