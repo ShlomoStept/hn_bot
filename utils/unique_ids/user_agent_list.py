@@ -91,6 +91,7 @@ User_Agent_list = {
 
 import random
 
-def get_random_user_agent(os="linux"):
+def get_random_user_agent(os="linux") -> str:
     random_selection = random.randrange(0,len(User_Agent_list[os]))    
-    return random_selection
+    return str(User_Agent_list[os][random_selection])
+
