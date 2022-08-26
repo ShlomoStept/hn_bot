@@ -5,6 +5,9 @@ A Bot that searches for and posts links to archived versions of articles after s
 <p align="center">
   <img src="https://user-images.githubusercontent.com/74121686/186787727-f1dd40ed-a5ec-4e82-b7e3-2cc292700bb6.png" width="200">
 </p>
+<p align="center">
+Enjoy a cute robot I made with dalle-2
+</p>
 
 ## Process 
 The Program follows **4 steps** :
@@ -22,8 +25,8 @@ The Program follows **4 steps** :
     
     
 ## State Of Project 
-Unfortunately, the application was blocked by the infamous moderator of HackerNews, **@dang**, because bot = bad 🙄
-However, the program works perfectly 
+Unfortunately, the application was blocked by the infamous moderator of HackerNews, **@dang**, since bot = evil. 🙄
+The software, however, performs flawlessly (p.s. - i'm joking, I'm sure their are 100+ bugs). 
 
 ## Future Plans
 
