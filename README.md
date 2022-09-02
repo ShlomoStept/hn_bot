@@ -25,14 +25,14 @@ The Program follows **4 steps** :
     
     
 ## State Of Project 
-Unfortunately, the application was blocked by the moderator of HackerNews, **@dang**, since bot = evil. 🙄
+Unfortunately, the application was blocked by the moderator of HackerNews, **@dang**, since hackernews doesnt allow bots.
 The software, however, performs flawlessly (p.s. - i'm joking, I'm sure their are 100+ bugs). 
 
 ## Future Plans
 
-I enjoyed learning about building a bot and using APIs while also discovering a whole new field of computer science.
+I enjoyed learning about building a bot and using APIs while also discovering a whole new subfield of computer science.
 - I hope someone finds this project entertaining or useful 
-- Feel free to expand on this and build something better (or maybe even 🤫 something that is undetectable 😉)
+- Feel free to expand on this and build something better
 
 ## Dependencies
 Contents of requirements.txt
