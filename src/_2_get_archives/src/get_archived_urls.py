@@ -99,7 +99,7 @@ class Process_Archived_Urls:
                 --------------------------------------------------------------------------------------------------------------------------------------------------
                 
                         FOR now archive.today calls are not allowed, cloudfare seems to automatically place a google captcha after 15 calls 
-                            NOTE :: TODO == Find a solution if this can pay for itself (i-proxies, ii-captcha_solver (ai/ru) )
+                            NOTE :: TODO == Find a solution : (i-proxies, ii-captcha_solver (ai/ru) )
                 
                 --------------------------------------------------------------------------------------------------------------------------------------------------
                 --------------------------------------------------------------------------------------------------------------------------------------------------
