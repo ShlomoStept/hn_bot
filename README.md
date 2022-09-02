@@ -25,7 +25,7 @@ The Program follows **4 steps** :
     
     
 ## State Of Project 
-Unfortunately, the application was blocked by the moderator of HackerNews, since hackernews doesnt allow bots.
+Unfortunately, the application was blocked by the moderator of HackerNews, since hackernews doesn't allow bots.
 The software, however, performs flawlessly (p.s. - i'm joking, I'm sure their are 100+ bugs). 
 
 ## Future Plans
